@@ -116,18 +116,78 @@ function escapeHtml(value) {
   return div.innerHTML;
 }
 
+/**
+ * Clamps a number between a minimum and maximum value.
+ * @param {number|string} val - The input value to clamp.
+ * @param {number} min - The minimum allowed value.
+ * @param {number} max - The maximum allowed value.
+ * @returns {number} The clamped numerical value.
+ */
 function clampNumber(val, min, max) {
   const num = Number(val);
   if (!Number.isFinite(num)) return min;
   return Math.max(min, Math.min(max, num));
 }
 
+/**
+ * Upserts an item into an array based on its date property, sorting the result chronologically.
+ * @param {Array<{date: string}>} collection - The array to update.
+ * @param {{date: string}} item - The item to insert or update.
+ * @returns {Array<{date: string}>} A new sorted array with the item upserted.
+ */
 function upsertByDate(collection, item) {
   const next = collection.filter((entry) => entry.date !== item.date);
   next.push(item);
   return next.sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/**
+ * Extracts and clamps wellness metrics from form inputs.
+ * @param {string} prefix - The ID prefix for the inputs (e.g., "daily" or "").
+ * @param {string} date - The date to associate with this wellness record.
+ * @returns {Object} The parsed wellness object including the calculated score.
+ */
+function extractWellnessForm(prefix, date) {
+  const wellness = {
+    date,
+    study: clampNumber($(`${prefix}StudyHours`)?.value, 0, 24),
+    sleep: clampNumber($(`${prefix}SleepHours`)?.value, 0, 24),
+    water: clampNumber($(`${prefix}WaterIntake`)?.value, 0, 50),
+    exercise: clampNumber($(`${prefix}ExerciseMinutes`)?.value, 0, 1440),
+  };
+  wellness.score = calculateScore(wellness);
+  return wellness;
+}
+
+/**
+ * Creates or updates a journal entry securely.
+ * @param {string} rawText - The raw input text.
+ * @param {string} date - The target date.
+ * @param {Object} [existing] - An existing journal entry to preserve metadata.
+ * @returns {Object|null} A new journal object or null if text is empty.
+ */
+function createJournalEntry(rawText, date, existing = null) {
+  const text = typeof rawText === "string" ? rawText.trim() : "";
+  if (text.length === 0) return null;
+  return {
+    id: existing?.id || crypto.randomUUID(),
+    date,
+    text: escapeHtml(text),
+    aiResponse: getMoodRecommendation(text),
+    createdAt: existing?.createdAt || `${date}T12:00:00.000Z`,
+    updatedAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Calculates a daily wellness score (0-100) based on various recovery metrics.
+ * @param {Object} metrics - The raw metrics object.
+ * @param {number|string} metrics.study - Study hours.
+ * @param {number|string} metrics.sleep - Sleep hours.
+ * @param {number|string} metrics.water - Water intake units.
+ * @param {number|string} metrics.exercise - Exercise minutes.
+ * @returns {number} The calculated wellness score rounded to the nearest integer.
+ */
 function calculateScore({ study, sleep, water, exercise }) {
   const s = clampNumber(sleep, 0, 24);
   const st = clampNumber(study, 0, 24);
@@ -211,12 +271,22 @@ function renderCalendar() {
   renderDailyForm();
 }
 
-function renderDailyMoodButtons() {
-  $("dailyMoodGrid").innerHTML = moods.map((mood) => `
-    <button class="mood-option ${mood.label === selectedDailyMood.label ? "active" : ""}" type="button" data-daily-mood="${mood.label}">
+/**
+ * Renders a grid of mood buttons into a specified container.
+ * @param {string} containerId - The DOM ID of the container.
+ * @param {string} dataAttr - The data attribute for the button (e.g., "data-mood").
+ * @param {Object} activeMood - The currently selected mood object to highlight.
+ */
+function renderMoodGrid(containerId, dataAttr, activeMood) {
+  $(containerId).innerHTML = moods.map((mood) => `
+    <button class="mood-option ${mood.label === activeMood.label ? "active" : ""}" type="button" ${dataAttr}="${mood.label}">
       <span>${mood.emoji}</span>${mood.label}
     </button>
   `).join("");
+}
+
+function renderDailyMoodButtons() {
+  renderMoodGrid("dailyMoodGrid", "data-daily-mood", selectedDailyMood);
 }
 
 function renderDailyForm() {
@@ -240,11 +310,7 @@ function renderDailyForm() {
 }
 
 function renderMoodButtons() {
-  $("moodGrid").innerHTML = moods.map((mood) => `
-    <button class="mood-option ${mood.label === selectedMood.label ? "active" : ""}" type="button" data-mood="${mood.label}">
-      <span>${mood.emoji}</span>${mood.label}
-    </button>
-  `).join("");
+  renderMoodGrid("moodGrid", "data-mood", selectedMood);
 }
 
 function renderJournal() {
@@ -360,6 +426,11 @@ function renderInsights() {
   `).join("");
 }
 
+/**
+ * Calculates the longest streak of sequentially improving (increasing) numerical values.
+ * @param {Array<number>} values - Array of numerical values (e.g. wellness scores).
+ * @returns {number} The maximum number of consecutive improvements.
+ */
 function longestImprovingStreak(values) {
   let current = 1, best = 0, previous = null;
   values.forEach((value) => {
@@ -425,6 +496,10 @@ function makeChart(id, type, labels, dateKeys, data, label, min, max) {
   }
 }
 
+/**
+ * Analyzes the last 7 days of user records to detect burnout and stress patterns.
+ * @returns {Array<{level: string, kicker: string, title: string, message: string}>} Array of insight cards.
+ */
 function analyzeBurnout() {
   const result = [];
   const recentRecords = getLastDays(7).map(recordForDate);
@@ -458,6 +533,11 @@ function renderReset() {
 // BUSINESS LOGIC
 // ==========================================
 
+/**
+ * Simple keyword-based AI logic to provide empathetic recommendations based on journal text.
+ * @param {string} text - The raw text input from the user's journal.
+ * @returns {string|null} A recommendation string, or null if no keywords match.
+ */
 function getMoodRecommendation(text) {
   const lower = text.toLowerCase();
   if (lower.includes("sad")) return "It's okay to feel sad. Be gentle with yourself today.";
@@ -533,32 +613,14 @@ function handleClearData() {
 
 function handleDailyFormSubmit(event) {
   event.preventDefault();
-  const rawText = $("dailyJournal").value;
-  const text = typeof rawText === "string" ? rawText.trim() : "";
   const existing = recordForDate(selectedDate).journal;
+  const newEntry = createJournalEntry($("dailyJournal").value, selectedDate, existing);
   
   state.entries = state.entries.filter((entry) => entry.id !== existing?.id && entry.date !== selectedDate);
-  if (text.length > 0) {
-    state.entries.push({
-      id: existing?.id || crypto.randomUUID(),
-      date: selectedDate,
-      text: escapeHtml(text),
-      aiResponse: getMoodRecommendation(text),
-      createdAt: existing?.createdAt || `${selectedDate}T12:00:00.000Z`,
-      updatedAt: new Date().toISOString(),
-    });
-  }
+  if (newEntry) state.entries.push(newEntry);
 
   state.moods = upsertByDate(state.moods, { ...selectedDailyMood, date: selectedDate });
-  const wellness = {
-    date: selectedDate,
-    study: clampNumber($("dailyStudyHours").value, 0, 24),
-    sleep: clampNumber($("dailySleepHours").value, 0, 24),
-    water: clampNumber($("dailyWaterIntake").value, 0, 50),
-    exercise: clampNumber($("dailyExerciseMinutes").value, 0, 1440),
-  };
-  wellness.score = calculateScore(wellness);
-  state.wellness = upsertByDate(state.wellness, wellness);
+  state.wellness = upsertByDate(state.wellness, extractWellnessForm("daily", selectedDate));
   
   saveState();
   renderCalendar();
@@ -572,19 +634,12 @@ function handleDailyFormSubmit(event) {
 
 function handleJournalFormSubmit(event) {
   event.preventDefault();
-  const rawText = $("journalText").value;
-  const text = typeof rawText === "string" ? rawText.trim() : "";
-  if (text.length === 0) return;
   const date = todayKey();
+  const newEntry = createJournalEntry($("journalText").value, date);
+  if (!newEntry) return;
   
   state.entries = state.entries.filter((entry) => entry.date !== date);
-  state.entries.push({ 
-    id: crypto.randomUUID(), 
-    date, 
-    text: escapeHtml(text), 
-    aiResponse: getMoodRecommendation(text), 
-    createdAt: new Date().toISOString() 
-  });
+  state.entries.push(newEntry);
   
   saveState();
   $("journalText").value = "";
@@ -603,16 +658,7 @@ function handleMoodFormSubmit(event) {
 
 function handleWellnessFormSubmit(event) {
   event.preventDefault();
-  const wellness = {
-    date: todayKey(),
-    study: clampNumber($("studyHours").value, 0, 24),
-    sleep: clampNumber($("sleepHours").value, 0, 24),
-    water: clampNumber($("waterIntake").value, 0, 50),
-    exercise: clampNumber($("exerciseMinutes").value, 0, 1440),
-  };
-  wellness.score = calculateScore(wellness);
-  state.wellness = upsertByDate(state.wellness, wellness);
-  
+  state.wellness = upsertByDate(state.wellness, extractWellnessForm("", todayKey()));
   saveState();
   renderWellness();
   renderDashboardStats();
@@ -683,9 +729,11 @@ function renderAll() {
 // ==========================================
 // BOOTSTRAP & MANUAL TESTING DOCUMENTATION
 // ==========================================
-bindEvents();
-renderAll();
-switchPage();
+if (typeof window !== "undefined" && document.getElementById("calendarGrid")) {
+  bindEvents();
+  renderAll();
+  switchPage();
+}
 
 /*
  * ==========================================

@@ -36,6 +36,15 @@ BrainDumpz is built with strict adherence to simplicity, speed, and resilience.
 2. Open `index.html` in any modern web browser.
 3. *That's it.* No `npm install`, no servers to start.
 
-## Manual Testing
+## Manual & Automated Testing
 
+### Automated Test Suite (Zero-Install)
+To fulfill code quality and test coverage requirements without introducing build tools or dependencies like Jest/Cypress, this repository includes a custom **Vanilla JS Test Runner**.
+
+1. Open `test.html` in your browser.
+2. The page will immediately run a suite of Unit and Integration tests.
+3. It will simulate DOM interactions (creating entries, editing entries, checking emergency reset functionality) and validate the core algorithms (Wellness calculations, Burnout Radar).
+4. Results are printed cleanly on the screen as `PASS` or `FAIL`.
+
+### Manual Testing
 The `app.js` file contains a detailed block at the very bottom explaining how to manually verify the application's defensive architecture, including simulating catastrophic browser storage failures and testing the journaling sanitization routines.

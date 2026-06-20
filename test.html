@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BrainDumpz Test Suite</title>
+  <style>
+    body { font-family: monospace; background: #0d1117; color: #c9d1d9; padding: 20px; }
+    h1 { color: #58a6ff; }
+    .pass { color: #3fb950; font-weight: bold; }
+    .fail { color: #f85149; font-weight: bold; }
+    .suite-title { color: #d2a8ff; margin-top: 20px; font-weight: bold; font-size: 1.1em; }
+    #test-results { white-space: pre-wrap; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <h1>BrainDumpz Vanilla Test Suite</h1>
+  <div id="test-results"></div>
+
+  <!-- Hidden Mock DOM for Integration Tests -->
+  <div id="mock-dom" style="display:none;">
+    <!-- Forms & Inputs -->
+    <form id="dailyForm"></form>
+    <form id="journalForm"></form>
+    <form id="moodForm"></form>
+    <form id="wellnessForm"></form>
+    
+    <textarea id="dailyJournal"></textarea>
+    <textarea id="journalText"></textarea>
+    
+    <input id="dailyStudyHours" />
+    <input id="dailySleepHours" />
+    <input id="dailyWaterIntake" />
+    <input id="dailyExerciseMinutes" />
+    <input id="studyHours" />
+    <input id="sleepHours" />
+    <input id="waterIntake" />
+    <input id="exerciseMinutes" />
+    
+    <!-- Render targets to avoid null exceptions in renderers -->
+    <div id="entryCount"></div>
+    <div id="journalTimeline"></div>
+    <div id="moodHistory"></div>
+    <div id="wellnessScore"></div>
+    <div id="scoreMessage"></div>
+    <div id="todayMood"></div>
+    <div id="todayScore"></div>
+    <div id="todaySleep"></div>
+    <div id="todayStudy"></div>
+    <div id="insightCards"></div>
+    
+    <!-- Reset Mode -->
+    <button id="breathButton"></button>
+    <div id="breathingCircle"></div>
+    <span id="breathPhase"></span>
+    <strong id="breathTimer"></strong>
+    <div id="affirmations"></div>
+    <div id="recoveryList"></div>
+    <div id="quoteCards"></div>
+  </div>
+
+  <script>
+    // Mock Chart.js to prevent "not defined" errors during test
+    window.Chart = class { destroy() {} };
+  </script>
+  
+  <!-- Load the main application code (bootstrap will be skipped because calendarGrid is absent) -->
+  <script src="app.js"></script>
+  
+  <!-- Load and run tests -->
+  <script src="test.js"></script>
+</body>
+</html>
