@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BrainDumpz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#calendar" aria-label="BrainDumpz calendar">
+          <span class="brand-mark">B</span>
+          <span>
+            <strong>BrainDumpz</strong>
+            <small>Study calmer. Recover faster.</small>
+          </span>
+        </a>
+        <div class="top-actions">
+          <button class="clear-btn" id="clearData" type="button">Clear Data</button>
+          <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle dark mode">
+            <span id="themeIcon">◐</span>
+          </button>
+        </div>
+      </header>
+
+      <nav class="nav-tabs" aria-label="Primary">
+        <a href="#calendar" class="nav-link active" data-page="calendar">Calendar</a>
+        <a href="#dashboard" class="nav-link" data-page="dashboard">Dashboard</a>
+        <a href="#journal" class="nav-link" data-page="journal">Brain Dump</a>
+        <a href="#mood" class="nav-link" data-page="mood">Mood</a>
+        <a href="#wellness" class="nav-link" data-page="wellness">Wellness</a>
+        <a href="#radar" class="nav-link" data-page="radar">Radar</a>
+        <a href="#reset" class="nav-link reset-link" data-page="reset">Reset</a>
+      </nav>
+
+      <main>
+        <section class="page active" id="calendar" aria-labelledby="calendarTitle">
+          <div class="hero-panel calendar-hero">
+            <div>
+              <p class="eyebrow">Calendar-Based Wellness Journal</p>
+              <h1 id="calendarTitle">Your wellness timeline</h1>
+              <p class="hero-copy">
+                Pick any past or present day, review what happened, and turn check-ins into a visual reflection journey.
+              </p>
+            </div>
+            <div class="calendar-summary">
+              <span id="selectedDateLabel">Today</span>
+              <strong id="selectedDateScore">--</strong>
+              <small id="selectedDateMood">No record yet</small>
+            </div>
+          </div>
+
+          <div class="calendar-layout">
+            <section class="glass-panel calendar-panel" aria-labelledby="monthLabel">
+              <div class="calendar-toolbar">
+                <button class="icon-btn" id="prevMonth" type="button" aria-label="Previous month">‹</button>
+                <h2 id="monthLabel">Month</h2>
+                <button class="icon-btn" id="nextMonth" type="button" aria-label="Next month">›</button>
+              </div>
+              <div class="calendar-weekdays" aria-hidden="true">
+                <span>Sun</span>
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+              </div>
+              <div class="calendar-grid" id="calendarGrid"></div>
+              <div class="calendar-legend">
+                <span><i class="dot great"></i> Good</span>
+                <span><i class="dot okay"></i> Okay</span>
+                <span><i class="dot stressed"></i> Stress</span>
+                <span><i class="dot burnout"></i> Burnout</span>
+              </div>
+            </section>
+
+            <form class="glass-panel form-panel daily-panel" id="dailyForm">
+              <div class="panel-heading">
+                <div>
+                  <h2>Daily Check-In</h2>
+                  <span id="dailyFormDate">Today</span>
+                </div>
+                <span id="dailySavedBadge">Unsaved</span>
+              </div>
+              <label>Daily brain dump
+                <textarea id="dailyJournal" rows="6" placeholder="Thoughts, worries, wins, frustrations..."></textarea>
+              </label>
+              <label>Mood</label>
+              <div class="mood-grid compact" id="dailyMoodGrid"></div>
+              <div class="field-grid">
+                <label>
+                  Study hours
+                  <input id="dailyStudyHours" type="number" min="0" max="18" step="0.5" value="6" />
+                </label>
+                <label>
+                  Sleep hours
+                  <input id="dailySleepHours" type="number" min="0" max="14" step="0.5" value="7" />
+                </label>
+                <label>
+                  Water intake
+                  <input id="dailyWaterIntake" type="number" min="0" max="12" step="1" value="6" />
+                </label>
+                <label>
+                  Exercise minutes
+                  <input id="dailyExerciseMinutes" type="number" min="0" max="180" step="5" value="20" />
+                </label>
+              </div>
+              <div class="daily-score">
+                <span>Wellness Score</span>
+                <strong id="dailyWellnessScore">--</strong>
+                <small id="dailyScoreMessage">Save this day to generate a score.</small>
+              </div>
+              <button class="primary-btn" type="submit">Save Daily Record</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="page" id="dashboard" aria-labelledby="dashboardTitle">
+          <div class="hero-panel">
+            <div>
+              <p class="eyebrow">Exam prep support for JEE, NEET, UPSC, CAT, and GATE</p>
+              <h1 id="dashboardTitle">Your mental study desk</h1>
+              <p class="hero-copy">
+                Track moods, unload thoughts, and catch burnout signals before they start running the day.
+              </p>
+            </div>
+            <div class="focus-visual" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <article class="stat-card">
+              <span>Today Mood</span>
+              <strong id="todayMood">Not logged</strong>
+            </article>
+            <article class="stat-card">
+              <span>Wellness Score</span>
+              <strong id="todayScore">--</strong>
+            </article>
+            <article class="stat-card">
+              <span>Sleep</span>
+              <strong id="todaySleep">--</strong>
+            </article>
+            <article class="stat-card">
+              <span>Study Hours</span>
+              <strong id="todayStudy">--</strong>
+            </article>
+          </div>
+
+          <div class="range-tabs" id="rangeTabs" aria-label="Insight range">
+            <button class="range-btn active" type="button" data-days="7">7 days</button>
+            <button class="range-btn" type="button" data-days="14">14 days</button>
+            <button class="range-btn" type="button" data-days="30">30 days</button>
+          </div>
+
+          <section class="radar-grid insight-grid" id="insightCards"></section>
+
+          <section class="dashboard-grid">
+            <article class="glass-panel chart-panel">
+              <div class="panel-heading">
+                <h2>Mood Trend</h2>
+                <span>Last 14 days</span>
+              </div>
+              <canvas id="moodChart"></canvas>
+            </article>
+            <article class="glass-panel chart-panel">
+              <div class="panel-heading">
+                <h2>Sleep Trend</h2>
+                <span>Hours</span>
+              </div>
+              <canvas id="sleepChart"></canvas>
+            </article>
+            <article class="glass-panel chart-panel">
+              <div class="panel-heading">
+                <h2>Study Hours</h2>
+                <span>Daily load</span>
+              </div>
+              <canvas id="studyChart"></canvas>
+            </article>
+            <article class="glass-panel chart-panel">
+              <div class="panel-heading">
+                <h2>Wellness Score</h2>
+                <span>Out of 100</span>
+              </div>
+              <canvas id="scoreChart"></canvas>
+            </article>
+          </section>
+        </section>
+
+        <section class="page" id="journal" aria-labelledby="journalTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Daily Brain Dump</p>
+              <h1 id="journalTitle">Clear the mental queue</h1>
+            </div>
+          </div>
+          <div class="two-column">
+            <form class="glass-panel form-panel" id="journalForm">
+              <label for="journalText">Thoughts, worries, wins, frustrations</label>
+              <textarea id="journalText" rows="11" placeholder="Write whatever is taking up space today..."></textarea>
+              <button class="primary-btn" type="submit">Save Entry</button>
+            </form>
+            <article class="glass-panel">
+              <div class="panel-heading">
+                <h2>Timeline</h2>
+                <span id="entryCount">0 entries</span>
+              </div>
+              <div class="timeline" id="journalTimeline"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" id="mood" aria-labelledby="moodTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Mood Tracker</p>
+              <h1 id="moodTitle">Name the day honestly</h1>
+            </div>
+          </div>
+          <div class="two-column">
+            <form class="glass-panel form-panel" id="moodForm">
+              <label>Today&apos;s mood</label>
+              <div class="mood-grid" id="moodGrid"></div>
+              <button class="primary-btn" type="submit">Log Mood</button>
+            </form>
+            <article class="glass-panel">
+              <div class="panel-heading">
+                <h2>Mood History</h2>
+                <span>Newest first</span>
+              </div>
+              <div class="history-list" id="moodHistory"></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" id="wellness" aria-labelledby="wellnessTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Wellness Check-in</p>
+              <h1 id="wellnessTitle">Protect the basics</h1>
+            </div>
+          </div>
+          <div class="two-column">
+            <form class="glass-panel form-panel" id="wellnessForm">
+              <div class="field-grid">
+                <label>
+                  Study hours
+                  <input id="studyHours" type="number" min="0" max="18" step="0.5" value="6" />
+                </label>
+                <label>
+                  Sleep hours
+                  <input id="sleepHours" type="number" min="0" max="14" step="0.5" value="7" />
+                </label>
+                <label>
+                  Water intake
+                  <input id="waterIntake" type="number" min="0" max="12" step="1" value="6" />
+                </label>
+                <label>
+                  Exercise minutes
+                  <input id="exerciseMinutes" type="number" min="0" max="180" step="5" value="20" />
+                </label>
+              </div>
+              <button class="primary-btn" type="submit">Save Check-in</button>
+            </form>
+            <article class="glass-panel score-panel">
+              <span>Today&apos;s Wellness Score</span>
+              <strong id="wellnessScore">--</strong>
+              <p id="scoreMessage">Save a check-in to see your score.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" id="radar" aria-labelledby="radarTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Burnout Radar</p>
+              <h1 id="radarTitle">Catch the patterns early</h1>
+            </div>
+          </div>
+          <div class="radar-grid" id="radarCards"></div>
+        </section>
+
+        <section class="page" id="reset" aria-labelledby="resetTitle">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Emergency Reset Mode</p>
+              <h1 id="resetTitle">One minute back to steady</h1>
+            </div>
+          </div>
+          <div class="reset-grid">
+            <article class="glass-panel breathing-card">
+              <div class="breathing-circle" id="breathingCircle">
+                <span id="breathPhase">Breathe In</span>
+                <strong id="breathTimer">60</strong>
+              </div>
+              <button class="primary-btn" id="breathButton" type="button">Start 60s Reset</button>
+            </article>
+            <article class="glass-panel">
+              <div class="panel-heading">
+                <h2>Affirmations</h2>
+              </div>
+              <div class="affirmation-list" id="affirmations"></div>
+            </article>
+            <article class="glass-panel">
+              <div class="panel-heading">
+                <h2>Quick Recovery</h2>
+              </div>
+              <div class="checklist" id="recoveryList"></div>
+            </article>
+            <article class="glass-panel quote-stack" id="quoteCards"></article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="chart.umd.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
